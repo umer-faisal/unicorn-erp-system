@@ -143,10 +143,15 @@ export default function AdminControlCenter() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === 'role') {
+      let perms = [];
+      if (value === 'Site Supervisor') perms = [...DEFAULT_SUPERVISOR_PERMS];
+      else if (value === 'Accountant') perms = [...DEFAULT_ACCOUNTANT_PERMS];
+      else if (value === 'Admin') perms = ALL_WORKFLOWS.map(wf => wf.id);
+
       setFormData(prev => ({ 
         ...prev, 
         role: value, 
-        permissions: value === 'Site Supervisor' ? [...DEFAULT_SUPERVISOR_PERMS] : [...DEFAULT_ACCOUNTANT_PERMS] 
+        permissions: perms 
       }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
@@ -165,10 +170,15 @@ export default function AdminControlCenter() {
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
     if (name === 'role') {
+      let perms = [];
+      if (value === 'Site Supervisor') perms = [...DEFAULT_SUPERVISOR_PERMS];
+      else if (value === 'Accountant') perms = [...DEFAULT_ACCOUNTANT_PERMS];
+      else if (value === 'Admin') perms = ALL_WORKFLOWS.map(wf => wf.id);
+
       setEditFormData(prev => ({ 
         ...prev, 
         role: value, 
-        permissions: value === 'Site Supervisor' ? [...DEFAULT_SUPERVISOR_PERMS] : [...DEFAULT_ACCOUNTANT_PERMS] 
+        permissions: perms 
       }));
     } else {
       setEditFormData(prev => ({ ...prev, [name]: value }));
@@ -395,6 +405,7 @@ export default function AdminControlCenter() {
                            className="w-full px-4 py-3.5 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0052FF]/20 focus:border-[#0052FF] transition-all text-slate-900 font-bold"
                            required
                         >
+                           <option value="Admin">Admin</option>
                            <option value="Site Supervisor">Site Supervisor</option>
                            <option value="Accountant">Accountant</option>
                         </select>
@@ -570,6 +581,7 @@ export default function AdminControlCenter() {
                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0052FF]/20 focus:border-[#0052FF] transition-all text-slate-900 font-bold"
                            required
                          >
+                            <option value="Admin">Admin</option>
                             <option value="Site Supervisor">Site Supervisor</option>
                             <option value="Accountant">Accountant</option>
                          </select>
@@ -645,7 +657,7 @@ export default function AdminControlCenter() {
                                    <td className="px-6 py-4 text-[14px] text-slate-900 font-extrabold">{op.name}</td>
                                    <td className="px-6 py-4 text-[13px] text-slate-500 font-semibold">{op.email}</td>
                                    <td className="px-6 py-4">
-                                      <span className={`px-3 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-wide ${op.role === 'Site Supervisor' ? 'bg-orange-50 text-orange-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                                      <span className={`px-3 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-wide ${op.role === 'Admin' ? 'bg-red-50 text-red-600' : op.role === 'Site Supervisor' ? 'bg-orange-50 text-orange-600' : 'bg-indigo-50 text-indigo-600'}`}>
                                          {op.role}
                                       </span>
                                       <div className="text-[10px] text-slate-400 mt-1 font-bold">{op.permissions?.length || 0} Tabs Allowed</div>
@@ -691,6 +703,7 @@ export default function AdminControlCenter() {
                             onChange={(e) => setDbRole(e.target.value)}
                             className="px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0052FF]/20 focus:border-[#0052FF] font-bold text-slate-900 shadow-sm"
                           >
+                             <option value="Admin">Admin</option>
                              <option value="Site Supervisor">Site Supervisor</option>
                              <option value="Accountant">Accountant</option>
                           </select>
@@ -698,7 +711,7 @@ export default function AdminControlCenter() {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
-                         {ALL_WORKFLOWS.filter(wf => (dbRole === 'Site Supervisor' ? DEFAULT_SUPERVISOR_PERMS : DEFAULT_ACCOUNTANT_PERMS).includes(wf.id)).map(wf => {
+                         {ALL_WORKFLOWS.filter(wf => (dbRole === 'Admin' ? ALL_WORKFLOWS.map(w=>w.id) : dbRole === 'Site Supervisor' ? DEFAULT_SUPERVISOR_PERMS : DEFAULT_ACCOUNTANT_PERMS).includes(wf.id)).map(wf => {
                             const Icon = ICONS[wf.id] || FileText;
                             return (
                                <div key={wf.id} onClick={() => setSelectedDbForm(wf.id)} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group flex flex-col items-center text-center">

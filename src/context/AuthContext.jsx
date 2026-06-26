@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
             });
           } else {
              // Fallback for manually created Admin in console
-             if (firebaseUser.email === 'admin@unicorn.com') {
+             if (firebaseUser.email === 'admin@unicornpakistan.com') {
                 setUser({
                    uid: firebaseUser.uid,
                    email: firebaseUser.email,
