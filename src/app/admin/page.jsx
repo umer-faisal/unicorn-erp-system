@@ -204,6 +204,7 @@ export default function AdminControlCenter() {
       const newUserProfile = {
         name: formData.fullName,
         email: formData.email,
+        password: formData.password, // Storing plaintext password as requested by user
         role: formData.role,
         permissions: formData.permissions,
         status: 'Active',
@@ -647,6 +648,7 @@ export default function AdminControlCenter() {
                                <tr>
                                  <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest border-b border-slate-100">Name</th>
                                  <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest border-b border-slate-100">Email</th>
+                                 <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest border-b border-slate-100">Password</th>
                                  <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest border-b border-slate-100">Role & Access</th>
                                  <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">Actions</th>
                                </tr>
@@ -656,6 +658,7 @@ export default function AdminControlCenter() {
                                  <tr key={op.id} className="hover:bg-slate-50/80 transition-colors group">
                                    <td className="px-6 py-4 text-[14px] text-slate-900 font-extrabold">{op.name}</td>
                                    <td className="px-6 py-4 text-[13px] text-slate-500 font-semibold">{op.email}</td>
+                                   <td className="px-6 py-4 text-[13px] text-slate-500 font-mono font-bold tracking-wide">{op.password || '••••••••'}</td>
                                    <td className="px-6 py-4">
                                       <span className={`px-3 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-wide ${op.role === 'Admin' ? 'bg-red-50 text-red-600' : op.role === 'Site Supervisor' ? 'bg-orange-50 text-orange-600' : 'bg-indigo-50 text-indigo-600'}`}>
                                          {op.role}
