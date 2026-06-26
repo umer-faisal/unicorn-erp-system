@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 const AuthContext = createContext();
@@ -29,14 +29,20 @@ export const AuthProvider = ({ children }) => {
               ...userData
             });
           } else {
-             // Fallback for manually created Admin in console
              if (firebaseUser.email === 'admin@unicornpakistan.com') {
-                setUser({
-                   uid: firebaseUser.uid,
+                const newAdminData = {
+                   name: 'System Admin',
                    email: firebaseUser.email,
                    role: 'Admin',
-                   name: 'System Admin',
-                   initials: 'SA'
+                   permissions: ['vendor', 'quotation', 'manpower', 'measurement', 'sitemeasurement', 'vendorsummary', 'requisition', 'grn', 'progressreport'],
+                   initials: 'SA',
+                   status: 'Active',
+                   createdAt: new Date().toISOString()
+                };
+                await setDoc(userDocRef, newAdminData);
+                setUser({
+                   uid: firebaseUser.uid,
+                   ...newAdminData
                 });
              } else {
                setUser({
