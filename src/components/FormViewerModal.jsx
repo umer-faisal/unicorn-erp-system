@@ -74,11 +74,11 @@ export default function FormViewerModal({ record, onClose }) {
   const FormComponent = FORM_COMPONENTS[record.formId];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm">
-      <div className="relative bg-[#f8f9fa] w-full max-w-6xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col border border-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm print:static print:bg-transparent print:p-0 print:m-0 print:block print:w-full">
+      <div className="relative bg-[#f8f9fa] w-full max-w-6xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col border border-slate-200 print:static print:shadow-none print:border-none print:bg-white print:max-h-none print:max-w-none print:w-full print:rounded-none print:block">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 rounded-t-2xl shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 rounded-t-2xl shrink-0 print:hidden">
           <div>
              <h2 className="text-lg font-extrabold text-slate-900 uppercase tracking-widest">Submission Viewer</h2>
              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">Record ID: <span className="text-[#0052FF]">{record.id}</span></p>
@@ -107,7 +107,7 @@ export default function FormViewerModal({ record, onClose }) {
         </div>
 
         {/* Form Container */}
-        <div className="flex-1 overflow-y-auto p-6" ref={formRef}>
+        <div className="flex-1 overflow-y-auto p-6 print:overflow-visible print:p-0 print:block" ref={formRef}>
            <style>{`
              .modal-form-wrapper button[type="submit"],
              .modal-form-wrapper button.print-hidden,
@@ -121,29 +121,20 @@ export default function FormViewerModal({ record, onClose }) {
              }
              @media print {
                 body * {
-                   visibility: hidden;
+                   -webkit-print-color-adjust: exact;
+                   print-color-adjust: exact;
                 }
-                .modal-form-wrapper, .modal-form-wrapper * {
-                   visibility: visible;
+                .modal-form-wrapper input,
+                .modal-form-wrapper textarea,
+                .modal-form-wrapper select {
+                   background-color: transparent !important;
                 }
-                /* Reset containing blocks to let the wrapper sit at the very top of the page */
-                .fixed, .relative, .absolute, .flex {
-                   position: static !important;
-                   transform: none !important;
-                }
-                .modal-form-wrapper {
-                   position: absolute !important;
-                   left: 0 !important;
-                   top: 0 !important;
-                   width: 100% !important;
-                   margin: 0 !important;
-                   padding: 0 !important;
-                   box-shadow: none !important;
-                   border: none !important;
+                .modal-form-wrapper button {
+                   display: none !important;
                 }
              }
            `}</style>
-           <div className="modal-form-wrapper bg-white shadow-sm ring-1 ring-slate-200 rounded-xl overflow-hidden">
+           <div className="modal-form-wrapper bg-white shadow-sm ring-1 ring-slate-200 rounded-xl overflow-hidden print:shadow-none print:ring-0 print:rounded-none">
               {FormComponent ? <FormComponent /> : <div className="p-8 text-center text-slate-500">Unknown Form Type</div>}
            </div>
         </div>

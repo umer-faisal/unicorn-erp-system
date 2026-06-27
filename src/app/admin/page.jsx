@@ -451,7 +451,7 @@ export default function AdminControlCenter() {
       )}
 
       {/* Dynamic Left Sidebar */}
-      <aside className={`w-64 bg-slate-900 text-slate-300 flex flex-col fixed inset-y-0 z-40 shadow-2xl transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+      <aside className={`w-64 bg-slate-900 text-slate-300 flex flex-col fixed inset-y-0 z-40 shadow-2xl transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 print:hidden`}>
         <div className="p-8 border-b border-slate-800/60 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img src="/logo-svg.png" alt="Logo" className="w-8 h-8 object-contain" />
@@ -505,9 +505,9 @@ export default function AdminControlCenter() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full md:ml-64 flex flex-col min-h-screen">
+      <main className="flex-1 w-full md:ml-64 flex flex-col min-h-screen print:ml-0 print:block print:w-full">
         {/* Dynamic Top Navbar */}
-        <header className="h-[80px] bg-white border-b border-slate-200 flex items-center justify-between px-6 md:px-10 sticky top-0 z-10">
+        <header className="h-[80px] bg-white border-b border-slate-200 flex items-center justify-between px-6 md:px-10 sticky top-0 z-10 print:hidden">
           <div className="flex items-center gap-4">
             <button className="md:hidden p-2 text-slate-500 hover:text-slate-900" onClick={() => setIsSidebarOpen(true)}>
               <Menu className="w-5 h-5" />
@@ -527,7 +527,7 @@ export default function AdminControlCenter() {
         </header>
 
         {/* Dashboard Inner Content */}
-        <div className="p-4 md:p-10 max-w-[1400px] mx-auto w-full">
+        <div className="p-4 md:p-10 max-w-[1400px] mx-auto w-full print:hidden">
            
            {activeTab === 'users' && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
