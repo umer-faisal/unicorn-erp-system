@@ -120,6 +120,9 @@ export default function FormViewerModal({ record, onClose }) {
                 background-color: transparent !important;
              }
              @media print {
+                @page {
+                   size: landscape;
+                }
                 body * {
                    -webkit-print-color-adjust: exact;
                    print-color-adjust: exact;
