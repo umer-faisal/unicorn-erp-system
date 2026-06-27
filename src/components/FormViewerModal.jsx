@@ -126,11 +126,20 @@ export default function FormViewerModal({ record, onClose }) {
                 .modal-form-wrapper, .modal-form-wrapper * {
                    visibility: visible;
                 }
+                /* Reset containing blocks to let the wrapper sit at the very top of the page */
+                .fixed, .relative, .absolute, .flex {
+                   position: static !important;
+                   transform: none !important;
+                }
                 .modal-form-wrapper {
-                   position: absolute;
-                   left: 0;
-                   top: 0;
-                   width: 100%;
+                   position: absolute !important;
+                   left: 0 !important;
+                   top: 0 !important;
+                   width: 100% !important;
+                   margin: 0 !important;
+                   padding: 0 !important;
+                   box-shadow: none !important;
+                   border: none !important;
                 }
              }
            `}</style>
