@@ -7,6 +7,7 @@ import { collection, getDocs, setDoc, doc, deleteDoc, updateDoc, query, where } 
 import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { db, secondaryAuth } from '@/lib/firebase';
 import { toast } from 'react-toastify';
+import FormViewerModal from '@/components/FormViewerModal';
 import { 
   Users, 
   LogOut, 
@@ -97,6 +98,7 @@ export default function AdminControlCenter() {
   const [exportEndDate, setExportEndDate] = useState('');
   const [submissions, setSubmissions] = useState([]);
   const [isFetchingSubmissions, setIsFetchingSubmissions] = useState(false);
+  const [viewingRecord, setViewingRecord] = useState(null);
 
   useEffect(() => {
     if (selectedDbForm) {
@@ -788,7 +790,11 @@ export default function AdminControlCenter() {
                                ) : submissions.map((sub) => (
                                   <tr key={sub.id} className="hover:bg-slate-50/80 transition-colors">
                                      <td className="px-6 py-4 text-[13px] text-slate-500 font-bold">{new Date(sub.submittedAt).toLocaleDateString()}</td>
-                                     <td className="px-6 py-4 text-[13px] text-[#0052FF] font-extrabold">{sub.id}</td>
+                                     <td className="px-6 py-4 text-[13px] text-[#0052FF] font-extrabold">
+                                        <span onClick={() => setViewingRecord(sub)} className="cursor-pointer hover:underline underline-offset-4 decoration-2">
+                                           {sub.id}
+                                        </span>
+                                     </td>
                                      <td className="px-6 py-4 text-[13px] text-slate-600 font-semibold">{sub.submittedBy}</td>
                                      <td className="px-6 py-4 text-right">
                                         <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[11px] font-extrabold uppercase tracking-wide">Processed</span>
@@ -805,6 +811,10 @@ export default function AdminControlCenter() {
 
         </div>
       </main>
+      
+      {/* Submissions Viewer Modal */}
+      <FormViewerModal record={viewingRecord} onClose={() => setViewingRecord(null)} />
+
     </div>
   );
 }
