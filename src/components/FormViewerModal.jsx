@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, Printer, FileSpreadsheet } from 'lucide-react';
 import VendorRegistrationForm from '@/components/VendorRegistrationForm';
 import VendorQuotationForm from '@/components/VendorQuotationForm';
 import ManpowerDeploymentForm from '@/components/ManpowerDeploymentForm';
@@ -24,6 +24,23 @@ const FORM_COMPONENTS = {
 
 export default function FormViewerModal({ record, onClose }) {
   const formRef = useRef(null);
+
+  const handleExportCSV = () => {
+    if (!record) return;
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Field,Value\r\n";
+    Object.entries(record).forEach(([key, value]) => {
+       const val = String(value || '').replace(/"/g, '""');
+       csvContent += `"${key}","${val}"\r\n`;
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `record_${record.id}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   useEffect(() => {
     if (formRef.current && record) {
@@ -66,12 +83,27 @@ export default function FormViewerModal({ record, onClose }) {
              <h2 className="text-lg font-extrabold text-slate-900 uppercase tracking-widest">Submission Viewer</h2>
              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">Record ID: <span className="text-[#0052FF]">{record.id}</span></p>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <div className="flex items-center gap-3">
+             <button 
+               onClick={() => window.print()}
+               className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-[12px] font-extrabold transition-all shadow-sm uppercase tracking-wider"
+             >
+               <Printer className="w-4 h-4" /> Print / PDF
+             </button>
+             <button 
+               onClick={handleExportCSV}
+               className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded-xl text-[12px] font-extrabold transition-all shadow-sm uppercase tracking-wider"
+             >
+               <FileSpreadsheet className="w-4 h-4" /> Export Excel
+             </button>
+             <div className="w-px h-6 bg-slate-200 mx-2"></div>
+             <button 
+               onClick={onClose}
+               className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+             >
+               <X className="w-6 h-6" />
+             </button>
+          </div>
         </div>
 
         {/* Form Container */}
@@ -86,6 +118,20 @@ export default function FormViewerModal({ record, onClose }) {
              .modal-form-wrapper textarea,
              .modal-form-wrapper select {
                 background-color: transparent !important;
+             }
+             @media print {
+                body * {
+                   visibility: hidden;
+                }
+                .modal-form-wrapper, .modal-form-wrapper * {
+                   visibility: visible;
+                }
+                .modal-form-wrapper {
+                   position: absolute;
+                   left: 0;
+                   top: 0;
+                   width: 100%;
+                }
              }
            `}</style>
            <div className="modal-form-wrapper bg-white shadow-sm ring-1 ring-slate-200 rounded-xl overflow-hidden">
