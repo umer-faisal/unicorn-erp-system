@@ -34,10 +34,10 @@ export default function ManpowerDeploymentForm({ onSuccess }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full bg-white text-black font-sans pb-4">
+    <form onSubmit={handleSubmit} className="w-full bg-white text-black font-sans pb-4 print:h-auto print:overflow-visible print:block">
       
       {/* Outer Border Box */}
-      <div className="border-[3px] border-black flex flex-col">
+      <div className="border-[3px] border-black flex flex-col print:h-auto print:overflow-visible print:block">
 
          {/* Header Row */}
          <div className="flex flex-col md:flex-row border-b-[3px] border-black divide-y-[3px] md:divide-y-0 md:divide-x-[3px] divide-black">
@@ -83,9 +83,9 @@ export default function ManpowerDeploymentForm({ onSuccess }) {
          </div>
 
          {/* Main Grid Rows */}
-         <div className="flex flex-col divide-y-2 md:divide-y-[3px] divide-black bg-white">
+         <div className="flex flex-col divide-y-2 md:divide-y-[3px] divide-black bg-white print:h-auto print:overflow-visible print:block">
             {items.map((item, idx) => (
-               <div key={idx} className="flex flex-col md:flex-row md:divide-x-[3px] divide-black hover:bg-slate-50 transition-colors border-b-2 md:border-b-0 border-slate-300 md:border-transparent pb-3 md:pb-0">
+               <div key={idx} style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }} className="flex flex-col md:flex-row md:divide-x-[3px] divide-black hover:bg-slate-50 transition-colors border-b-2 md:border-b-0 border-slate-300 md:border-transparent pb-3 md:pb-0">
                   <div className="md:w-[15%] flex flex-col md:block p-2 md:p-0 bg-slate-50 md:bg-transparent">
                      <span className="md:hidden text-[10px] uppercase font-bold text-slate-500 mb-1 border-b border-slate-200 pb-1">DATE</span>
                      <input name={`item_date_${idx}`} type="date" className="w-full h-full outline-none bg-transparent text-center md:px-2 min-h-[40px] text-sm font-semibold uppercase" />
