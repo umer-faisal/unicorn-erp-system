@@ -5,12 +5,15 @@ import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser, clearUser } from '@/store/slices/authSlice';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const user = useSelector((state) => state.auth.user);
+  const dispatch = useDispatch();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -23,11 +26,11 @@ export const AuthProvider = ({ children }) => {
           
           if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
-            setUser({
+            dispatch(setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email,
               ...userData
-            });
+            }));
           } else {
              if (firebaseUser.email === 'admin@unicornpakistan.com') {
                 const newAdminData = {
@@ -40,26 +43,26 @@ export const AuthProvider = ({ children }) => {
                    createdAt: new Date().toISOString()
                 };
                 await setDoc(userDocRef, newAdminData);
-                setUser({
+                dispatch(setUser({
                    uid: firebaseUser.uid,
                    ...newAdminData
-                });
+                }));
              } else {
-               setUser({
+               dispatch(setUser({
                  uid: firebaseUser.uid,
                  email: firebaseUser.email,
                  role: 'User',
                  name: 'Unknown User',
                  initials: 'UU',
                  permissions: []
-               });
+               }));
              }
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
         }
       } else {
-        setUser(null);
+        dispatch(clearUser());
       }
       setLoading(false);
     });

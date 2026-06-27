@@ -7,6 +7,8 @@ import { collection, getDocs, setDoc, doc, deleteDoc, updateDoc, query, where } 
 import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { db, secondaryAuth } from '@/lib/firebase';
 import { toast } from 'react-toastify';
+import { useDispatch, useSelector } from 'react-redux';
+import { setActiveTab, setUsersList, setSelectedDbForm, setSubmissions, setIsFetchingSubmissions } from '@/store/slices/adminSlice';
 import FormViewerModal from '@/components/FormViewerModal';
 import { 
   Users, 
@@ -65,14 +67,19 @@ const DEFAULT_ACCOUNTANT_PERMS = ['dashboard', 'vendor', 'quotation', 'vendorsum
 export default function AdminControlCenter() {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { usersList, submissions, isFetchingSubmissions, selectedDbForm, activeTab } = useSelector((state) => state.admin);
 
-  const [activeTab, setActiveTab] = useState('users');
+  const localSetActiveTab = (val) => dispatch(setActiveTab(val));
+  const localSetUsersList = (val) => dispatch(setUsersList(val));
+  const localSetSelectedDbForm = (val) => dispatch(setSelectedDbForm(val));
+  const localSetSubmissions = (val) => dispatch(setSubmissions(val));
+  const localSetIsFetchingSubmissions = (val) => dispatch(setIsFetchingSubmissions(val));
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isProvisioning, setIsProvisioning] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');
-  
-  const [usersList, setUsersList] = useState([]);
   
   const [formData, setFormData] = useState({ 
     fullName: '', 
@@ -93,40 +100,37 @@ export default function AdminControlCenter() {
 
   // Central Database States
   const [dbRole, setDbRole] = useState('Site Supervisor');
-  const [selectedDbForm, setSelectedDbForm] = useState(null);
   const [exportStartDate, setExportStartDate] = useState('');
   const [exportEndDate, setExportEndDate] = useState('');
-  const [submissions, setSubmissions] = useState([]);
-  const [isFetchingSubmissions, setIsFetchingSubmissions] = useState(false);
   const [viewingRecord, setViewingRecord] = useState(null);
 
   useEffect(() => {
     if (selectedDbForm) {
       const fetchSubmissions = async () => {
-        setIsFetchingSubmissions(true);
+        localSetIsFetchingSubmissions(true);
         try {
            const q = query(collection(db, 'submissions'), where('formId', '==', selectedDbForm));
            const snapshot = await getDocs(q);
            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
            data.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
-           setSubmissions(data);
+           localSetSubmissions(data);
         } catch (error) {
            console.error("Error fetching submissions:", error);
         } finally {
-           setIsFetchingSubmissions(false);
+           localSetIsFetchingSubmissions(false);
         }
       };
       fetchSubmissions();
     } else {
-      setSubmissions([]);
+      localSetSubmissions([]);
     }
-  }, [selectedDbForm]);
+  }, [selectedDbForm, dispatch]);
 
   const fetchUsers = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, 'users'));
       const users = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setUsersList(users);
+      localSetUsersList(users);
     } catch (e) {
       console.error(e);
     }
@@ -468,14 +472,14 @@ export default function AdminControlCenter() {
           <p className="px-4 text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-4">System Access</p>
           
           <button 
-             onClick={() => {setActiveTab('users'); setIsSidebarOpen(false);}}
+             onClick={() => {localSetActiveTab('users'); setIsSidebarOpen(false);}}
              className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-[13px] font-extrabold transition-all ${activeTab === 'users' ? 'bg-[#0052FF] text-white shadow-lg shadow-blue-900/20' : 'hover:bg-slate-800/80 text-slate-400 hover:text-white'}`}
           >
              <Users className="w-4 h-4" /> User Management
           </button>
 
           <button 
-             onClick={() => {setActiveTab('database'); setIsSidebarOpen(false);}}
+             onClick={() => {localSetActiveTab('database'); setIsSidebarOpen(false);}}
              className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-[13px] font-extrabold transition-all ${activeTab === 'database' ? 'bg-[#0052FF] text-white shadow-lg shadow-blue-900/20' : 'hover:bg-slate-800/80 text-slate-400 hover:text-white'}`}
           >
              <Database className="w-4 h-4" /> Central Database
@@ -719,7 +723,7 @@ export default function AdminControlCenter() {
                          {ALL_WORKFLOWS.filter(wf => (dbRole === 'Admin' ? ALL_WORKFLOWS.map(w=>w.id) : dbRole === 'Site Supervisor' ? DEFAULT_SUPERVISOR_PERMS : DEFAULT_ACCOUNTANT_PERMS).includes(wf.id)).map(wf => {
                             const Icon = ICONS[wf.id] || FileText;
                             return (
-                               <div key={wf.id} onClick={() => setSelectedDbForm(wf.id)} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group flex flex-col items-center text-center">
+                               <div key={wf.id} onClick={() => localSetSelectedDbForm(wf.id)} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group flex flex-col items-center text-center">
                                   <div className="w-14 h-14 bg-slate-100 text-slate-700 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-[#0052FF] group-hover:text-white transition-colors">
                                      <Icon className="w-7 h-7" />
                                   </div>
@@ -734,7 +738,7 @@ export default function AdminControlCenter() {
                     <>
                       {/* Export Screen for specific Form */}
                       <div className="mb-8">
-                         <button onClick={() => { setSelectedDbForm(null); setExportStartDate(''); setExportEndDate(''); }} className="flex items-center gap-2 text-[13px] font-extrabold text-slate-500 hover:text-[#0052FF] transition-colors mb-4 uppercase tracking-widest">
+                         <button onClick={() => { localSetSelectedDbForm(null); setExportStartDate(''); setExportEndDate(''); }} className="flex items-center gap-2 text-[13px] font-extrabold text-slate-500 hover:text-[#0052FF] transition-colors mb-4 uppercase tracking-widest">
                             <ArrowLeft className="w-4 h-4" /> Back to Database Hub
                          </button>
                          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
