@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import { setActiveUserTab } from '@/store/slices/userSlice';
 import { LogOut, LayoutDashboard, FileText, Bell, ReceiptText, Users, ShoppingCart, Ruler, Wallet, FilePlus, PackageCheck, LineChart, Menu, X } from 'lucide-react';
 import VendorRegistrationForm from '@/components/VendorRegistrationForm';
 import VendorQuotationForm from '@/components/VendorQuotationForm';
@@ -17,8 +19,10 @@ import SiteProgressReportForm from '@/components/SiteProgressReportForm';
 export default function UserDashboard() {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
+  const dispatch = useDispatch();
+  const activeTab = useSelector((state) => state.user.activeTab);
   
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const setActiveTab = (val) => dispatch(setActiveUserTab(val));
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
