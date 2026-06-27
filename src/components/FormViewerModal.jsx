@@ -74,8 +74,8 @@ export default function FormViewerModal({ record, onClose }) {
   const FormComponent = FORM_COMPONENTS[record.formId];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm print:static print:bg-transparent print:p-0 print:m-0 print:block print:w-full">
-      <div className="relative bg-[#f8f9fa] w-full max-w-6xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col border border-slate-200 print:static print:shadow-none print:border-none print:bg-white print:max-h-none print:max-w-none print:w-full print:rounded-none print:block">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm print:static print:bg-transparent print:p-0 print:m-0 print:block print:w-full print:h-auto print:overflow-visible">
+      <div className="relative bg-[#f8f9fa] w-full max-w-6xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col border border-slate-200 print:static print:shadow-none print:border-none print:bg-transparent print:max-h-none print:max-w-none print:w-full print:rounded-none print:block print:h-auto print:overflow-visible">
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 rounded-t-2xl shrink-0 print:hidden">
@@ -107,7 +107,7 @@ export default function FormViewerModal({ record, onClose }) {
         </div>
 
         {/* Form Container */}
-        <div className="flex-1 overflow-y-auto p-6 print:overflow-visible print:p-0 print:block" ref={formRef}>
+        <div className="flex-1 overflow-y-auto p-6 print:overflow-visible print:p-0 print:block print:h-auto" ref={formRef}>
            <style>{`
              .modal-form-wrapper button[type="submit"],
              .modal-form-wrapper button.print-hidden,
@@ -135,9 +135,17 @@ export default function FormViewerModal({ record, onClose }) {
                 .modal-form-wrapper button {
                    display: none !important;
                 }
+                .modal-form-wrapper {
+                   page-break-inside: avoid;
+                   break-inside: avoid;
+                }
+                .modal-form-wrapper * {
+                   page-break-inside: avoid;
+                   break-inside: avoid;
+                }
              }
            `}</style>
-           <div className="modal-form-wrapper bg-white shadow-sm ring-1 ring-slate-200 rounded-xl overflow-hidden print:shadow-none print:ring-0 print:rounded-none">
+           <div className="modal-form-wrapper bg-white shadow-sm ring-1 ring-slate-200 rounded-xl overflow-hidden print:shadow-none print:ring-0 print:rounded-none print:block print:absolute print:top-0 print:left-0 print:w-full print:p-6 print:overflow-visible print:bg-transparent">
               {FormComponent ? <FormComponent /> : <div className="p-8 text-center text-slate-500">Unknown Form Type</div>}
            </div>
         </div>
