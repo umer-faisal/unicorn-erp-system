@@ -1,16 +1,81 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Globe } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Globe, Link2, ChevronDown, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'react-toastify';
+import { createNotification } from '@/lib/notificationService';
+import { sendNotificationEmail } from '@/lib/emailService';
 
 export default function MeasurementForm({ onSuccess }) {
   const [items, setItems] = useState(Array.from({ length: 15 }, (_, i) => ({ id: i })));
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Cascade: Pending PR list
+  const [pendingPRs, setPendingPRs] = useState([]);
+  const [selectedPR, setSelectedPR] = useState(null);
+  const [isLoadingPRs, setIsLoadingPRs] = useState(false);
+  const formRef = useRef(null);
+
+  // Fetch pending PRs on mount
+  useEffect(() => {
+    const fetchPendingPRs = async () => {
+      setIsLoadingPRs(true);
+      try {
+        const q = query(
+          collection(db, 'submissions'),
+          where('formId', '==', 'requisition'),
+          where('status', '==', 'pending')
+        );
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        data.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+        setPendingPRs(data);
+      } catch (error) {
+        console.error('Error fetching pending PRs:', error);
+      } finally {
+        setIsLoadingPRs(false);
+      }
+    };
+    fetchPendingPRs();
+  }, []);
+
+  // Auto-fill when a PR is selected
+  const handlePRSelect = (prId) => {
+    if (!prId) {
+      setSelectedPR(null);
+      return;
+    }
+    const pr = pendingPRs.find(p => p.id === prId);
+    if (!pr || !formRef.current) return;
+    setSelectedPR(pr);
+
+    const form = formRef.current;
+    // Fill PR# field
+    const prInput = form.querySelector('[name="pr"]');
+    if (prInput) prInput.value = pr.reqNumber || '';
+    
+    // Fill Vendor (from supervisor if available)
+    // Fill date with today
+    const dateInput = form.querySelector('[name="date"]');
+    if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+    
+    // Map PR items to PO items (closest matching fields)
+    for (let i = 0; i < 15; i++) {
+      const qtyInput = form.querySelector(`[name="item_qty_${i}"]`);
+      const descInput = form.querySelector(`[name="item_desc_${i}"]`);
+      const unitInput = form.querySelector(`[name="item_unit_${i}"]`);
+      
+      if (qtyInput) qtyInput.value = pr[`item_qty_${i}`] || '';
+      if (descInput) descInput.value = pr[`item_details_${i}`] || '';
+      if (unitInput) unitInput.value = pr[`item_unit_${i}`] || '';
+    }
+
+    toast.info(`PR #${pr.reqNumber || 'N/A'} data loaded into form.`);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,9 +87,61 @@ export default function MeasurementForm({ onSuccess }) {
       payload.submittedAt = new Date().toISOString();
       payload.submittedBy = user?.email || 'Unknown';
       
-      await addDoc(collection(db, 'submissions'), payload);
+      // Cascade fields
+      payload.status = 'pending';
+      payload.createdByEmail = user?.email || '';
+      payload.assignedToRole = 'Accountant';
+      payload.linkedPRId = selectedPR?.id || '';
+      
+      const docRef = await addDoc(collection(db, 'submissions'), payload);
+      
+      // If linked to a PR, mark the PR as completed
+      if (selectedPR?.id) {
+        await updateDoc(doc(db, 'submissions', selectedPR.id), { status: 'completed' });
+        
+        // Notify the original PR submitter
+        if (selectedPR.createdByEmail) {
+          await createNotification({
+            recipientRole: '__all__',
+            recipientUserId: null,
+            message: `Your Purchase Requisition (Req# ${selectedPR.reqNumber || 'N/A'}) has been processed into a Work Order/PO by ${user?.name || user?.email}.`,
+            relatedDocId: docRef.id,
+            relatedFormType: 'measurement',
+          });
+
+          await sendNotificationEmail(
+            selectedPR.createdByEmail,
+            'Your PR Has Been Processed',
+            `Your Purchase Requisition (Req# ${selectedPR.reqNumber || 'N/A'}) has been processed into a Work Order/PO by ${user?.name || user?.email}.`
+          );
+        }
+      }
+      
+      // Create notification for GRN processing
+      await createNotification({
+        recipientRole: 'Accountant',
+        message: `New Work Order/PO (WO# ${payload.workOrder || 'N/A'}) created by ${user?.name || user?.email}. Please create a GRN when goods are received.`,
+        relatedDocId: docRef.id,
+        relatedFormType: 'measurement',
+      });
+
+      await createNotification({
+        recipientRole: 'Admin',
+        message: `New Work Order/PO (WO# ${payload.workOrder || 'N/A'}) created by ${user?.name || user?.email}.`,
+        relatedDocId: docRef.id,
+        relatedFormType: 'measurement',
+      });
+
+      // Send email notification
+      await sendNotificationEmail(
+        '',
+        'New Work Order/PO Created',
+        `A new Work Order/PO (WO# ${payload.workOrder || 'N/A'}) has been created by ${user?.name || user?.email}. Please login to process the GRN when goods arrive.`
+      );
+
       toast.success('Work Order submitted successfully!');
       e.target.reset();
+      setSelectedPR(null);
       if (onSuccess) onSuccess();
     } catch (err) {
       toast.error('Error submitting form: ' + err.message);
@@ -34,7 +151,42 @@ export default function MeasurementForm({ onSuccess }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full bg-white text-black font-sans pb-4">
+    <form onSubmit={handleSubmit} className="w-full bg-white text-black font-sans pb-4" ref={formRef}>
+      
+      {/* PR Linking Dropdown */}
+      <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-dashed border-blue-300 rounded-2xl print:hidden">
+        <div className="flex items-center gap-2 mb-3">
+          <Link2 className="w-5 h-5 text-blue-600" />
+          <h3 className="text-sm font-extrabold text-blue-900 uppercase tracking-wider">Link to Pending Purchase Requisition</h3>
+        </div>
+        <div className="relative">
+          <select
+            onChange={(e) => handlePRSelect(e.target.value)}
+            className="w-full px-4 py-3 bg-white border-2 border-blue-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all appearance-none cursor-pointer"
+            defaultValue=""
+          >
+            <option value="">— Select a Pending PR (Optional) —</option>
+            {isLoadingPRs ? (
+              <option disabled>Loading pending PRs...</option>
+            ) : pendingPRs.length === 0 ? (
+              <option disabled>No pending PRs available</option>
+            ) : (
+              pendingPRs.map(pr => (
+                <option key={pr.id} value={pr.id}>
+                  PR# {pr.reqNumber || 'N/A'} | {pr.supervisor || 'No Supervisor'} | {pr.project || 'No Project'} | {new Date(pr.submittedAt).toLocaleDateString()}
+                </option>
+              ))
+            )}
+          </select>
+          <ChevronDown className="w-4 h-4 text-blue-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
+        {selectedPR && (
+          <p className="mt-2 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg inline-block">
+            ✓ Linked to PR# {selectedPR.reqNumber || 'N/A'} — submitted by {selectedPR.submittedBy || 'Unknown'}
+          </p>
+        )}
+      </div>
+
       {/* Outer Border Box - Colored Blue to match screenshot */}
       <div className="border-2 md:border-[3px] border-[#0052FF] flex flex-col overflow-hidden bg-white">
         
@@ -80,7 +232,6 @@ export default function MeasurementForm({ onSuccess }) {
               </div>
               <div className="flex border-[2px] border-black h-[35px] md:h-[30px]">
                  <div className="w-[60px] px-2 flex items-center text-[12px] font-bold border-r-[2px] border-black uppercase bg-white">CS</div>
-                 {/* The screenshot shows CS input has a slight green background/border */}
                  <div className="flex-1 border-[2px] border-[#4F81BD] bg-[#EBF1DE] flex items-center">
                     <input name="cs" type="text" className="w-full h-full outline-none bg-transparent px-2 text-xs font-semibold" />
                  </div>

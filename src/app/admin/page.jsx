@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { setActiveTab, setUsersList, setSelectedDbForm, setSubmissions, setIsFetchingSubmissions } from '@/store/slices/adminSlice';
 import FormViewerModal from '@/components/FormViewerModal';
+import NotificationBell from '@/components/NotificationBell';
 import { 
   Users, 
   LogOut, 
@@ -521,9 +522,7 @@ export default function AdminControlCenter() {
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <button className="text-slate-400 hover:text-[#0052FF] transition-colors p-2 hover:bg-blue-50 rounded-full">
-              <Bell className="w-5 h-5" />
-            </button>
+            <NotificationBell />
             <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 shadow-sm overflow-hidden">
                <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || user?.email || 'Admin'}`} alt="Avatar" className="w-full h-full object-cover" />
             </div>

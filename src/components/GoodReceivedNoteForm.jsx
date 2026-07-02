@@ -1,16 +1,91 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Globe } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Globe, Link2, ChevronDown, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'react-toastify';
+import { createNotification } from '@/lib/notificationService';
+import { sendNotificationEmail } from '@/lib/emailService';
 
 export default function GoodReceivedNoteForm({ onSuccess }) {
   const [items, setItems] = useState(Array.from({ length: 15 }, (_, i) => ({ id: i })));
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Cascade: Pending PO list
+  const [pendingPOs, setPendingPOs] = useState([]);
+  const [selectedPO, setSelectedPO] = useState(null);
+  const [isLoadingPOs, setIsLoadingPOs] = useState(false);
+  const formRef = useRef(null);
+
+  // Fetch pending POs on mount
+  useEffect(() => {
+    const fetchPendingPOs = async () => {
+      setIsLoadingPOs(true);
+      try {
+        const q = query(
+          collection(db, 'submissions'),
+          where('formId', '==', 'measurement'),
+          where('status', '==', 'pending')
+        );
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        data.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+        setPendingPOs(data);
+      } catch (error) {
+        console.error('Error fetching pending POs:', error);
+      } finally {
+        setIsLoadingPOs(false);
+      }
+    };
+    fetchPendingPOs();
+  }, []);
+
+  // Auto-fill when a PO is selected
+  const handlePOSelect = (poId) => {
+    if (!poId) {
+      setSelectedPO(null);
+      return;
+    }
+    const po = pendingPOs.find(p => p.id === poId);
+    if (!po || !formRef.current) return;
+    setSelectedPO(po);
+
+    const form = formRef.current;
+    // Fill PO# field
+    const poInput = form.querySelector('[name="poNumber"]');
+    if (poInput) poInput.value = po.workOrder || '';
+    
+    // Fill PR details
+    const prDetailsInput = form.querySelector('[name="prDetails"]');
+    if (prDetailsInput) prDetailsInput.value = po.pr ? `PR# ${po.pr} | ${po.date || ''}` : '';
+    
+    // Fill GRN date with today
+    const dateInput = form.querySelector('[name="grnDate"]');
+    if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+    
+    // Fill supervisor and project if available
+    const supervisorInput = form.querySelector('[name="supervisor"]');
+    if (supervisorInput && po.vendor) supervisorInput.value = po.vendor || '';
+    
+    const projectInput = form.querySelector('[name="project"]');
+    if (projectInput) projectInput.value = po.cs || '';
+    
+    // Map PO items to GRN items
+    for (let i = 0; i < 15; i++) {
+      const categoryInput = form.querySelector(`[name="item_category_${i}"]`);
+      const detailsInput = form.querySelector(`[name="item_details_${i}"]`);
+      const orderedQtyInput = form.querySelector(`[name="item_orderedQty_${i}"]`);
+      
+      if (detailsInput) detailsInput.value = po[`item_desc_${i}`] || '';
+      if (orderedQtyInput) orderedQtyInput.value = po[`item_qty_${i}`] || '';
+      if (categoryInput) categoryInput.value = po[`item_number_${i}`] || '';
+    }
+
+    toast.info(`PO/WO# ${po.workOrder || 'N/A'} data loaded into form.`);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,9 +97,54 @@ export default function GoodReceivedNoteForm({ onSuccess }) {
       payload.submittedAt = new Date().toISOString();
       payload.submittedBy = user?.email || 'Unknown';
       
-      await addDoc(collection(db, 'submissions'), payload);
+      // Cascade fields
+      payload.status = 'completed';
+      payload.createdByEmail = user?.email || '';
+      payload.assignedToRole = 'Admin';
+      payload.linkedPOId = selectedPO?.id || '';
+      
+      const docRef = await addDoc(collection(db, 'submissions'), payload);
+      
+      // If linked to a PO, mark the PO as completed
+      if (selectedPO?.id) {
+        await updateDoc(doc(db, 'submissions', selectedPO.id), { status: 'completed' });
+        
+        // Notify the original PO submitter
+        if (selectedPO.createdByEmail) {
+          await createNotification({
+            recipientRole: '__all__',
+            recipientUserId: null,
+            message: `Your Work Order/PO (WO# ${selectedPO.workOrder || 'N/A'}) has been received and a GRN has been created by ${user?.name || user?.email}.`,
+            relatedDocId: docRef.id,
+            relatedFormType: 'grn',
+          });
+
+          await sendNotificationEmail(
+            selectedPO.createdByEmail,
+            'Your PO Has Been Received - GRN Created',
+            `Your Work Order/PO (WO# ${selectedPO.workOrder || 'N/A'}) has been received and a Good Received Note (GRN) has been created by ${user?.name || user?.email}.`
+          );
+        }
+      }
+      
+      // Create notification for Admin
+      await createNotification({
+        recipientRole: 'Admin',
+        message: `New GRN (GRN# ${payload.grnNumber || 'N/A'}) created by ${user?.name || user?.email}. Goods received for PO# ${payload.poNumber || 'N/A'}.`,
+        relatedDocId: docRef.id,
+        relatedFormType: 'grn',
+      });
+
+      // Send email notification
+      await sendNotificationEmail(
+        '',
+        'New GRN Created - Goods Received',
+        `A new Good Received Note (GRN# ${payload.grnNumber || 'N/A'}) has been created by ${user?.name || user?.email}. Goods have been received for PO# ${payload.poNumber || 'N/A'}.`
+      );
+
       toast.success('Good Received Note submitted successfully!');
       e.target.reset();
+      setSelectedPO(null);
       if (onSuccess) onSuccess();
     } catch (err) {
       toast.error('Error submitting form: ' + err.message);
@@ -34,7 +154,42 @@ export default function GoodReceivedNoteForm({ onSuccess }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full bg-white text-black font-sans pb-4">
+    <form onSubmit={handleSubmit} className="w-full bg-white text-black font-sans pb-4" ref={formRef}>
+
+      {/* PO Linking Dropdown */}
+      <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-dashed border-emerald-300 rounded-2xl print:hidden">
+        <div className="flex items-center gap-2 mb-3">
+          <Link2 className="w-5 h-5 text-emerald-600" />
+          <h3 className="text-sm font-extrabold text-emerald-900 uppercase tracking-wider">Link to Pending Work Order / PO</h3>
+        </div>
+        <div className="relative">
+          <select
+            onChange={(e) => handlePOSelect(e.target.value)}
+            className="w-full px-4 py-3 bg-white border-2 border-emerald-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all appearance-none cursor-pointer"
+            defaultValue=""
+          >
+            <option value="">— Select a Pending PO/WO (Optional) —</option>
+            {isLoadingPOs ? (
+              <option disabled>Loading pending POs...</option>
+            ) : pendingPOs.length === 0 ? (
+              <option disabled>No pending POs available</option>
+            ) : (
+              pendingPOs.map(po => (
+                <option key={po.id} value={po.id}>
+                  WO# {po.workOrder || 'N/A'} | {po.vendor || 'No Vendor'} | PR# {po.pr || 'N/A'} | {new Date(po.submittedAt).toLocaleDateString()}
+                </option>
+              ))
+            )}
+          </select>
+          <ChevronDown className="w-4 h-4 text-emerald-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
+        {selectedPO && (
+          <p className="mt-2 text-xs font-bold text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg inline-block">
+            ✓ Linked to WO# {selectedPO.workOrder || 'N/A'} — submitted by {selectedPO.submittedBy || 'Unknown'}
+          </p>
+        )}
+      </div>
+
       {/* Wrapping the table in a horizontal scroll container */}
       <div className="w-full overflow-x-auto pb-4">
          <div className="min-w-[900px] flex flex-col bg-white" style={{ fontFamily: 'Calibri, Arial, sans-serif' }}>

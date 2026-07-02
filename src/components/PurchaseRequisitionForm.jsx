@@ -6,6 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'react-toastify';
+import { createNotification } from '@/lib/notificationService';
+import { sendNotificationEmail } from '@/lib/emailService';
 
 export default function PurchaseRequisitionForm({ onSuccess }) {
   const [items, setItems] = useState(Array.from({ length: 15 }, (_, i) => ({ id: i })));
@@ -18,11 +20,40 @@ export default function PurchaseRequisitionForm({ onSuccess }) {
     try {
       const data = new FormData(e.target);
       const payload = Object.fromEntries(data.entries());
-      payload.formId = 'purchaserequisition';
+      payload.formId = 'requisition';
       payload.submittedAt = new Date().toISOString();
       payload.submittedBy = user?.email || 'Unknown';
       
-      await addDoc(collection(db, 'submissions'), payload);
+      // Cascade fields
+      payload.status = 'pending';
+      payload.createdByEmail = user?.email || '';
+      payload.assignedToRole = 'Accountant';
+      
+      const docRef = await addDoc(collection(db, 'submissions'), payload);
+      
+      // Create notification for Accountant role
+      await createNotification({
+        recipientRole: 'Accountant',
+        message: `New Purchase Requisition (Req# ${payload.reqNumber || 'N/A'}) submitted by ${user?.name || user?.email}. Please create a Work Order/PO.`,
+        relatedDocId: docRef.id,
+        relatedFormType: 'requisition',
+      });
+
+      // Also notify Admin
+      await createNotification({
+        recipientRole: 'Admin',
+        message: `New Purchase Requisition (Req# ${payload.reqNumber || 'N/A'}) submitted by ${user?.name || user?.email}.`,
+        relatedDocId: docRef.id,
+        relatedFormType: 'requisition',
+      });
+
+      // Send email notification
+      await sendNotificationEmail(
+        '', // Accountant email — will be sent to template's default or can be dynamically fetched
+        'New Purchase Requisition Submitted',
+        `A new Purchase Requisition (Req# ${payload.reqNumber || 'N/A'}) has been submitted by ${user?.name || user?.email}. Please login to create a Work Order/PO.`
+      );
+
       toast.success('Purchase Requisition submitted successfully!');
       e.target.reset();
       if (onSuccess) onSuccess();

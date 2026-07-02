@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { setActiveUserTab } from '@/store/slices/userSlice';
 import { LogOut, LayoutDashboard, FileText, Bell, ReceiptText, Users, ShoppingCart, Ruler, Wallet, FilePlus, PackageCheck, LineChart, Menu, X } from 'lucide-react';
+import NotificationBell from '@/components/NotificationBell';
 import VendorRegistrationForm from '@/components/VendorRegistrationForm';
 import VendorQuotationForm from '@/components/VendorQuotationForm';
 import ManpowerDeploymentForm from '@/components/ManpowerDeploymentForm';
@@ -199,9 +200,7 @@ export default function UserDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <button className="text-slate-400 hover:text-emerald-600 transition-colors p-2 hover:bg-emerald-50 rounded-full">
-              <Bell className="w-5 h-5" />
-            </button>
+            <NotificationBell />
             <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 shadow-sm overflow-hidden">
                <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || user?.email || 'User'}`} alt="Avatar" className="w-full h-full object-cover" />
             </div>
