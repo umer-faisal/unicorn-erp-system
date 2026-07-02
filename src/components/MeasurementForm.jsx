@@ -104,7 +104,7 @@ export default function MeasurementForm({ onSuccess }) {
           await createNotification({
             recipientRole: '__all__',
             recipientUserId: null,
-            message: `Your Purchase Requisition (Req# ${selectedPR.reqNumber || 'N/A'}) has been processed into a Work Order/PO by ${user?.name || user?.email}.`,
+            message: `Your Purchase Requisition (Req# ${selectedPR.reqNumber || 'N/A'}) has been processed into a Work Order by ${user?.name || user?.email}.`,
             relatedDocId: docRef.id,
             relatedFormType: 'measurement',
           });
@@ -112,7 +112,7 @@ export default function MeasurementForm({ onSuccess }) {
           await sendNotificationEmail(
             selectedPR.createdByEmail,
             'Your PR Has Been Processed',
-            `Your Purchase Requisition (Req# ${selectedPR.reqNumber || 'N/A'}) has been processed into a Work Order/PO by ${user?.name || user?.email}.`
+            `Your Purchase Requisition (Req# ${selectedPR.reqNumber || 'N/A'}) has been processed into a Work Order by ${user?.name || user?.email}.`
           );
         }
       }
@@ -120,14 +120,14 @@ export default function MeasurementForm({ onSuccess }) {
       // Create notification for GRN processing
       await createNotification({
         recipientRole: 'Accountant',
-        message: `New Work Order/PO (WO# ${payload.workOrder || 'N/A'}) created by ${user?.name || user?.email}. Please create a GRN when goods are received.`,
+        message: `New Work Order (WO# ${payload.workOrder || 'N/A'}) created by ${user?.name || user?.email}. Please create a GRN when goods are received.`,
         relatedDocId: docRef.id,
         relatedFormType: 'measurement',
       });
 
       await createNotification({
         recipientRole: 'Admin',
-        message: `New Work Order/PO (WO# ${payload.workOrder || 'N/A'}) created by ${user?.name || user?.email}.`,
+        message: `New Work Order (WO# ${payload.workOrder || 'N/A'}) created by ${user?.name || user?.email}.`,
         relatedDocId: docRef.id,
         relatedFormType: 'measurement',
       });
@@ -135,8 +135,8 @@ export default function MeasurementForm({ onSuccess }) {
       // Send email notification
       await sendNotificationEmail(
         '',
-        'New Work Order/PO Created',
-        `A new Work Order/PO (WO# ${payload.workOrder || 'N/A'}) has been created by ${user?.name || user?.email}. Please login to process the GRN when goods arrive.`
+        'New Work Order Created',
+        `A new Work Order (WO# ${payload.workOrder || 'N/A'}) has been created by ${user?.name || user?.email}. Please login to process the GRN when goods arrive.`
       );
 
       toast.success('Work Order submitted successfully!');

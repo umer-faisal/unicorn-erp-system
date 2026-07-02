@@ -114,7 +114,7 @@ export default function GoodReceivedNoteForm({ onSuccess }) {
           await createNotification({
             recipientRole: '__all__',
             recipientUserId: null,
-            message: `Your Work Order/PO (WO# ${selectedPO.workOrder || 'N/A'}) has been received and a GRN has been created by ${user?.name || user?.email}.`,
+            message: `Your Work Order (WO# ${selectedPO.workOrder || 'N/A'}) has been received and a GRN has been created by ${user?.name || user?.email}.`,
             relatedDocId: docRef.id,
             relatedFormType: 'grn',
           });
@@ -122,7 +122,7 @@ export default function GoodReceivedNoteForm({ onSuccess }) {
           await sendNotificationEmail(
             selectedPO.createdByEmail,
             'Your PO Has Been Received - GRN Created',
-            `Your Work Order/PO (WO# ${selectedPO.workOrder || 'N/A'}) has been received and a Good Received Note (GRN) has been created by ${user?.name || user?.email}.`
+            `Your Work Order (WO# ${selectedPO.workOrder || 'N/A'}) has been received and a Good Received Note (GRN) has been created by ${user?.name || user?.email}.`
           );
         }
       }
@@ -160,7 +160,7 @@ export default function GoodReceivedNoteForm({ onSuccess }) {
       <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-dashed border-emerald-300 rounded-2xl print:hidden">
         <div className="flex items-center gap-2 mb-3">
           <Link2 className="w-5 h-5 text-emerald-600" />
-          <h3 className="text-sm font-extrabold text-emerald-900 uppercase tracking-wider">Link to Pending Work Order / PO</h3>
+          <h3 className="text-sm font-extrabold text-emerald-900 uppercase tracking-wider">Link to Pending Work Order</h3>
         </div>
         <div className="relative">
           <select
@@ -168,11 +168,11 @@ export default function GoodReceivedNoteForm({ onSuccess }) {
             className="w-full px-4 py-3 bg-white border-2 border-emerald-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all appearance-none cursor-pointer"
             defaultValue=""
           >
-            <option value="">— Select a Pending PO/WO (Optional) —</option>
+            <option value="">— Select a Pending Work Order (Optional) —</option>
             {isLoadingPOs ? (
-              <option disabled>Loading pending POs...</option>
+              <option disabled>Loading pending Work Orders...</option>
             ) : pendingPOs.length === 0 ? (
-              <option disabled>No pending POs available</option>
+              <option disabled>No pending Work Orders available</option>
             ) : (
               pendingPOs.map(po => (
                 <option key={po.id} value={po.id}>

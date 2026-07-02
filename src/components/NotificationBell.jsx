@@ -100,7 +100,7 @@ export default function NotificationBell() {
   const formTypeLabels = {
     requisition: 'Purchase Requisition',
     purchaserequisition: 'Purchase Requisition',
-    measurement: 'Work Order / PO',
+    measurement: 'Work Order',
     grn: 'Good Received Note',
   };
 

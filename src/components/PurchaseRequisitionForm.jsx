@@ -34,7 +34,7 @@ export default function PurchaseRequisitionForm({ onSuccess }) {
       // Create notification for Accountant role
       await createNotification({
         recipientRole: 'Accountant',
-        message: `New Purchase Requisition (Req# ${payload.reqNumber || 'N/A'}) submitted by ${user?.name || user?.email}. Please create a Work Order/PO.`,
+        message: `New Purchase Requisition (Req# ${payload.reqNumber || 'N/A'}) submitted by ${user?.name || user?.email}. Please create a Work Order.`,
         relatedDocId: docRef.id,
         relatedFormType: 'requisition',
       });
@@ -51,7 +51,7 @@ export default function PurchaseRequisitionForm({ onSuccess }) {
       await sendNotificationEmail(
         '', // Accountant email — will be sent to template's default or can be dynamically fetched
         'New Purchase Requisition Submitted',
-        `A new Purchase Requisition (Req# ${payload.reqNumber || 'N/A'}) has been submitted by ${user?.name || user?.email}. Please login to create a Work Order/PO.`
+        `A new Purchase Requisition (Req# ${payload.reqNumber || 'N/A'}) has been submitted by ${user?.name || user?.email}. Please login to create a Work Order.`
       );
 
       toast.success('Purchase Requisition submitted successfully!');
