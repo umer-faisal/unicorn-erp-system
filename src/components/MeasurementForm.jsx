@@ -308,32 +308,35 @@ export default function MeasurementForm({ onSuccess }) {
            <div className="w-full md:w-[87%] p-2 text-center text-sm font-extrabold flex items-center justify-center h-[40px]">
               Total
            </div>
-           <div className="w-full md:w-[13%] p-2 text-center text-sm font-extrabold flex items-center justify-center h-[40px]">
-              -
+           <div className="w-full md:w-[13%] p-0 h-[40px]">
+              <input name="grandTotal" type="number" placeholder="0.00" className="w-full h-full bg-transparent outline-none text-center text-sm font-extrabold placeholder-black/30" />
            </div>
         </div>
 
         {/* Footer Area */}
         <div className="flex flex-col p-6 md:p-8 bg-white gap-8 border-t-[2px] border-black">
            <div className="flex flex-col md:flex-row justify-between gap-12 mt-4 md:mt-8">
-              <div className="flex-1 flex gap-6">
-                 <div className="flex-1 border-t-[2px] border-slate-400 pt-1.5 text-center md:text-left">
-                    <p className="text-[13px] font-medium text-slate-800">Accepted By</p>
-                    <p className="text-[13px] font-medium text-slate-800">(Vendor)</p>
-                 </div>
-                 <div className="flex-1 border-t-[2px] border-slate-400 pt-1.5">
-                    <p className="text-[13px] font-medium text-slate-800 text-center italic">Date</p>
-                 </div>
-              </div>
-              <div className="flex-1 flex gap-6">
-                 <div className="flex-[1.5] border-t-[2px] border-slate-400 pt-1.5 text-center md:text-left">
-                    <p className="text-[13px] font-medium text-slate-800">Authorized by</p>
-                 </div>
-                 <div className="flex-1 border-t-[2px] border-slate-400 pt-1.5">
-                    <p className="text-[13px] font-medium text-slate-800 text-center italic">Date</p>
-                 </div>
-              </div>
-           </div>
+               <div className="flex-1 flex gap-6">
+                  <div className="flex-1 border-b-[2px] border-slate-400 pb-1.5 flex flex-col justify-end">
+                     <input name="acceptedBy" type="text" className="w-full outline-none text-[13px] font-medium text-slate-800 text-center bg-transparent" placeholder="Name/Signature" />
+                     <p className="text-[11px] font-medium text-slate-500 text-center mt-1">Accepted By (Vendor)</p>
+                  </div>
+                  <div className="flex-1 border-b-[2px] border-slate-400 pb-1.5 flex flex-col justify-end">
+                     <input name="acceptedDate" type="date" className="w-full outline-none text-[13px] font-medium text-slate-800 text-center bg-transparent" />
+                     <p className="text-[11px] font-medium text-slate-500 text-center italic mt-1">Date</p>
+                  </div>
+               </div>
+               <div className="flex-1 flex gap-6">
+                  <div className="flex-[1.5] border-b-[2px] border-slate-400 pb-1.5 flex flex-col justify-end">
+                     <input name="authorizedBy" type="text" className="w-full outline-none text-[13px] font-medium text-slate-800 text-center bg-transparent" placeholder="Name/Signature" />
+                     <p className="text-[11px] font-medium text-slate-500 text-center mt-1">Authorized by</p>
+                  </div>
+                  <div className="flex-1 border-b-[2px] border-slate-400 pb-1.5 flex flex-col justify-end">
+                     <input name="authorizedDate" type="date" className="w-full outline-none text-[13px] font-medium text-slate-800 text-center bg-transparent" />
+                     <p className="text-[11px] font-medium text-slate-500 text-center italic mt-1">Date</p>
+                  </div>
+               </div>
+            </div>
 
            <div className="text-[13px] font-medium text-slate-800 leading-tight space-y-1.5 mt-4">
               <p>1. Final Payment Will be made on Actual measurements</p>
