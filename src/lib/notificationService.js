@@ -1,5 +1,24 @@
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+
+/**
+ * Fetch the email address of the first user found with the specified role.
+ * @param {string} role - Target role (e.g. 'Office Manager')
+ * @returns {Promise<string>} - Returns the email, or empty string if not found
+ */
+export async function fetchEmailByRole(role) {
+  try {
+    const q = query(collection(db, 'users'), where('role', '==', role));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      return snapshot.docs[0].data().email || '';
+    }
+    return '';
+  } catch (error) {
+    console.error('[NotificationService] Error fetching email by role:', error);
+    return '';
+  }
+}
 
 /**
  * Create a notification document in the 'notifications' Firestore collection.

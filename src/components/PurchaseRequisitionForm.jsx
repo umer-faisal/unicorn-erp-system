@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'react-toastify';
-import { createNotification } from '@/lib/notificationService';
+import { createNotification, fetchEmailByRole } from '@/lib/notificationService';
 import { sendNotificationEmail } from '@/lib/emailService';
 
 export default function PurchaseRequisitionForm({ onSuccess }) {
@@ -47,9 +47,10 @@ export default function PurchaseRequisitionForm({ onSuccess }) {
         relatedFormType: 'requisition',
       });
 
-      // Send email notification
+      // Send email notification dynamically to Office Manager
+      const targetEmail = await fetchEmailByRole('Office Manager');
       await sendNotificationEmail(
-        '', // Office Manager email — will be sent to template's default or can be dynamically fetched
+        targetEmail, 
         'New Purchase Requisition Submitted',
         `A new Purchase Requisition (Req# ${payload.reqNumber || 'N/A'}) has been submitted by ${user?.name || user?.email}. Please login to create a Work Order.`
       );

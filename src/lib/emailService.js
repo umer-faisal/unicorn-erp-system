@@ -19,20 +19,23 @@ export async function sendNotificationEmail(toEmail, subject, message) {
   // Removed placeholder check since real credentials are added
 
   try {
+    // Fallback email if toEmail is empty (prevents EmailJS validation crash)
+    const recipient = toEmail || 'admin@unicornpakistan.com';
+
     await emailjs.send(
       EMAILJS_SERVICE_ID,
       EMAILJS_TEMPLATE_ID,
       {
-        to_email: toEmail,
+        to_email: recipient,
         subject: subject,
         message: message,
       },
       EMAILJS_PUBLIC_KEY
     );
-    console.log(`[EmailJS] Email sent to ${toEmail}`);
+    console.log(`[EmailJS] Email sent to ${recipient}`);
     return true;
   } catch (error) {
-    console.error('[EmailJS] Failed to send email:', error);
+    console.error('[EmailJS] Failed to send email:', error.text || error);
     return false;
   }
 }

@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { collection, addDoc, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'react-toastify';
-import { createNotification } from '@/lib/notificationService';
+import { createNotification, fetchEmailByRole } from '@/lib/notificationService';
 import { sendNotificationEmail } from '@/lib/emailService';
 
 export default function MeasurementForm({ onSuccess }) {
@@ -132,10 +132,11 @@ export default function MeasurementForm({ onSuccess }) {
         relatedFormType: 'measurement',
       });
 
-      // Send email notification
+      // Send email notification dynamically to Store Manager
+      const targetEmail = await fetchEmailByRole('Store Manager');
       await sendNotificationEmail(
-        '',
-        'New Work Order Created',
+        targetEmail,
+        'New Work Order Generated',
         `A new Work Order (WO# ${payload.workOrder || 'N/A'}) has been created by ${user?.name || user?.email}. Please login to process the GRN when goods arrive.`
       );
 
