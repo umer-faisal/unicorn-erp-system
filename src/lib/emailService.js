@@ -18,10 +18,10 @@ const EMAILJS_PUBLIC_KEY = 'Ms3b3AazM8EZOk3m2';
 export async function sendNotificationEmail(toEmail, subject, message) {
   // Removed placeholder check since real credentials are added
 
-  try {
-    // Fallback email if toEmail is empty (prevents EmailJS validation crash)
-    const recipient = toEmail || 'admin@unicornpakistan.com';
+  // Fallback email if toEmail is empty (prevents EmailJS validation crash)
+  const recipient = toEmail || 'admin@unicornpakistan.com';
 
+  try {
     await emailjs.send(
       EMAILJS_SERVICE_ID,
       EMAILJS_TEMPLATE_ID,
@@ -39,3 +39,4 @@ export async function sendNotificationEmail(toEmail, subject, message) {
     return false;
   }
 }
+
