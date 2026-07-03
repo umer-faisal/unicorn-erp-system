@@ -3,9 +3,9 @@ import emailjs from '@emailjs/browser';
 // ============================================================
 // EmailJS Configuration — Fill in your own credentials
 // ============================================================
-const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';
-const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
-const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+const EMAILJS_SERVICE_ID = 'service_nv5bn9l';
+const EMAILJS_TEMPLATE_ID = 'template_0jn7ujm';
+const EMAILJS_PUBLIC_KEY = 'Ms3b3AazM8EZOk3m2';
 
 /**
  * Send a notification email via EmailJS (client-side, no Cloud Functions).
@@ -16,13 +16,7 @@ const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
  * @returns {Promise<boolean>} - true if sent successfully, false otherwise
  */
 export async function sendNotificationEmail(toEmail, subject, message) {
-  // Skip if placeholder credentials haven't been replaced
-  if (EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID' || 
-      EMAILJS_TEMPLATE_ID === 'YOUR_TEMPLATE_ID' || 
-      EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
-    console.warn('[EmailJS] Skipping email — placeholder credentials detected. Please update src/lib/emailService.js with your real EmailJS IDs.');
-    return false;
-  }
+  // Removed placeholder check since real credentials are added
 
   try {
     await emailjs.send(
