@@ -90,7 +90,7 @@ export default function MeasurementForm({ onSuccess }) {
       // Cascade fields
       payload.status = 'pending';
       payload.createdByEmail = user?.email || '';
-      payload.assignedToRole = 'Accountant';
+      payload.assignedToRole = 'Store Manager';
       payload.linkedPRId = selectedPR?.id || '';
       
       const docRef = await addDoc(collection(db, 'submissions'), payload);
@@ -119,7 +119,7 @@ export default function MeasurementForm({ onSuccess }) {
       
       // Create notification for GRN processing
       await createNotification({
-        recipientRole: 'Accountant',
+        recipientRole: 'Store Manager',
         message: `New Work Order (WO# ${payload.workOrder || 'N/A'}) created by ${user?.name || user?.email}. Please create a GRN when goods are received.`,
         relatedDocId: docRef.id,
         relatedFormType: 'measurement',

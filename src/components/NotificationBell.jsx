@@ -35,23 +35,24 @@ export default function NotificationBell() {
       or(
         where('recipientRole', '==', user.role),
         where('recipientUserId', '==', user.uid)
-      ),
-      orderBy('createdAt', 'desc')
+      )
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Sort client-side to avoid Firebase Composite Index requirement
+      data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       dispatch(setNotifications(data));
     }, (error) => {
-      // If index not yet created, fall back to role-only query
+      // Fallback to role-only query if OR is not supported/indexed
       console.error('[NotificationBell] Listener error:', error);
       const fallbackQ = query(
         collection(db, 'notifications'),
-        where('recipientRole', '==', user.role),
-        orderBy('createdAt', 'desc')
+        where('recipientRole', '==', user.role)
       );
       onSnapshot(fallbackQ, (snapshot) => {
         const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         dispatch(setNotifications(data));
       });
     });

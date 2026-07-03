@@ -27,13 +27,13 @@ export default function PurchaseRequisitionForm({ onSuccess }) {
       // Cascade fields
       payload.status = 'pending';
       payload.createdByEmail = user?.email || '';
-      payload.assignedToRole = 'Accountant';
+      payload.assignedToRole = 'Office Manager';
       
       const docRef = await addDoc(collection(db, 'submissions'), payload);
       
-      // Create notification for Accountant role
+      // Create notification for Office Manager role
       await createNotification({
-        recipientRole: 'Accountant',
+        recipientRole: 'Office Manager',
         message: `New Purchase Requisition (Req# ${payload.reqNumber || 'N/A'}) submitted by ${user?.name || user?.email}. Please create a Work Order.`,
         relatedDocId: docRef.id,
         relatedFormType: 'requisition',
@@ -49,7 +49,7 @@ export default function PurchaseRequisitionForm({ onSuccess }) {
 
       // Send email notification
       await sendNotificationEmail(
-        '', // Accountant email — will be sent to template's default or can be dynamically fetched
+        '', // Office Manager email — will be sent to template's default or can be dynamically fetched
         'New Purchase Requisition Submitted',
         `A new Purchase Requisition (Req# ${payload.reqNumber || 'N/A'}) has been submitted by ${user?.name || user?.email}. Please login to create a Work Order.`
       );

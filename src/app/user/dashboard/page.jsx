@@ -27,8 +27,8 @@ export default function UserDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // If not logged in, or not a valid field operator/accountant role, push to root
-    if (!loading && (!user || (user.role !== 'Site Supervisor' && user.role !== 'Accountant' && user.role !== 'User'))) {
+    // If not logged in, or not a valid user role, push to root
+    if (!loading && (!user || (user.role !== 'Office Manager' && user.role !== 'Project Manager' && user.role !== 'Store Manager' && user.role !== 'User'))) {
        router.push('/');
     }
   }, [user, loading, router]);

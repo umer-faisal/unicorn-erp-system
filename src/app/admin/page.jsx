@@ -62,8 +62,9 @@ const ICONS = {
   progressreport: LineChart,
 };
 
-const DEFAULT_SUPERVISOR_PERMS = ['dashboard', 'manpower', 'measurement', 'sitemeasurement', 'progressreport'];
-const DEFAULT_ACCOUNTANT_PERMS = ['dashboard', 'vendor', 'quotation', 'vendorsummary', 'requisition', 'grn'];
+const DEFAULT_OFFICE_MANAGER_PERMS = ['dashboard', 'vendor', 'quotation', 'measurement', 'vendorsummary'];
+const DEFAULT_PROJECT_MANAGER_PERMS = ['dashboard', 'manpower', 'progressreport', 'requisition', 'sitemeasurement'];
+const DEFAULT_STORE_MANAGER_PERMS = ['dashboard', 'grn'];
 
 export default function AdminControlCenter() {
   const { user, logout, loading } = useAuth();
@@ -86,8 +87,8 @@ export default function AdminControlCenter() {
     fullName: '', 
     email: '', 
     password: '', 
-    role: 'Site Supervisor',
-    permissions: DEFAULT_SUPERVISOR_PERMS
+    role: 'Office Manager',
+    permissions: DEFAULT_OFFICE_MANAGER_PERMS
   });
 
   const [showEditModal, setShowEditModal] = useState(false);
@@ -95,12 +96,12 @@ export default function AdminControlCenter() {
     id: '', 
     fullName: '', 
     email: '', 
-    role: 'Site Supervisor',
+    role: 'Office Manager',
     permissions: []
   });
 
   // Central Database States
-  const [dbRole, setDbRole] = useState('Site Supervisor');
+  const [dbRole, setDbRole] = useState('Office Manager');
   const [exportStartDate, setExportStartDate] = useState('');
   const [exportEndDate, setExportEndDate] = useState('');
   const [viewingRecord, setViewingRecord] = useState(null);
@@ -151,8 +152,9 @@ export default function AdminControlCenter() {
     const { name, value } = e.target;
     if (name === 'role') {
       let perms = [];
-      if (value === 'Site Supervisor') perms = [...DEFAULT_SUPERVISOR_PERMS];
-      else if (value === 'Accountant') perms = [...DEFAULT_ACCOUNTANT_PERMS];
+      if (value === 'Office Manager') perms = [...DEFAULT_OFFICE_MANAGER_PERMS];
+      else if (value === 'Project Manager') perms = [...DEFAULT_PROJECT_MANAGER_PERMS];
+      else if (value === 'Store Manager') perms = [...DEFAULT_STORE_MANAGER_PERMS];
       else if (value === 'Admin') perms = ALL_WORKFLOWS.map(wf => wf.id);
 
       setFormData(prev => ({ 
@@ -178,8 +180,9 @@ export default function AdminControlCenter() {
     const { name, value } = e.target;
     if (name === 'role') {
       let perms = [];
-      if (value === 'Site Supervisor') perms = [...DEFAULT_SUPERVISOR_PERMS];
-      else if (value === 'Accountant') perms = [...DEFAULT_ACCOUNTANT_PERMS];
+      if (value === 'Office Manager') perms = [...DEFAULT_OFFICE_MANAGER_PERMS];
+      else if (value === 'Project Manager') perms = [...DEFAULT_PROJECT_MANAGER_PERMS];
+      else if (value === 'Store Manager') perms = [...DEFAULT_STORE_MANAGER_PERMS];
       else if (value === 'Admin') perms = ALL_WORKFLOWS.map(wf => wf.id);
 
       setEditFormData(prev => ({ 
@@ -227,8 +230,8 @@ export default function AdminControlCenter() {
         fullName: '', 
         email: '', 
         password: '', 
-        role: 'Site Supervisor',
-        permissions: DEFAULT_SUPERVISOR_PERMS
+        role: 'Office Manager',
+        permissions: DEFAULT_OFFICE_MANAGER_PERMS
       });
       toast.success('User account created successfully!');
     } catch (error) {
@@ -414,8 +417,9 @@ export default function AdminControlCenter() {
                            required
                         >
                            <option value="Admin">Admin</option>
-                           <option value="Site Supervisor">Site Supervisor</option>
-                           <option value="Accountant">Accountant</option>
+                           <option value="Office Manager">Office Manager</option>
+                           <option value="Project Manager">Project Manager</option>
+                           <option value="Store Manager">Store Manager</option>
                         </select>
                      </div>
                      <div>
@@ -588,8 +592,9 @@ export default function AdminControlCenter() {
                            required
                          >
                             <option value="Admin">Admin</option>
-                            <option value="Site Supervisor">Site Supervisor</option>
-                            <option value="Accountant">Accountant</option>
+                            <option value="Office Manager">Office Manager</option>
+                            <option value="Project Manager">Project Manager</option>
+                            <option value="Store Manager">Store Manager</option>
                          </select>
                        </div>
                        <div>
@@ -665,7 +670,7 @@ export default function AdminControlCenter() {
                                    <td className="px-6 py-4 text-[13px] text-slate-500 font-semibold">{op.email}</td>
                                    <td className="px-6 py-4 text-[13px] text-slate-500 font-mono font-bold tracking-wide">{op.password || '••••••••'}</td>
                                    <td className="px-6 py-4">
-                                      <span className={`px-3 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-wide ${op.role === 'Admin' ? 'bg-red-50 text-red-600' : op.role === 'Site Supervisor' ? 'bg-orange-50 text-orange-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                                      <span className={`px-3 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-wide ${op.role === 'Admin' ? 'bg-red-50 text-red-600' : op.role === 'Project Manager' ? 'bg-orange-50 text-orange-600' : op.role === 'Office Manager' ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'}`}>
                                          {op.role}
                                       </span>
                                       <div className="text-[10px] text-slate-400 mt-1 font-bold">{op.permissions?.length || 0} Tabs Allowed</div>
@@ -712,14 +717,15 @@ export default function AdminControlCenter() {
                             className="px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0052FF]/20 focus:border-[#0052FF] font-bold text-slate-900 shadow-sm"
                           >
                              <option value="Admin">Admin</option>
-                             <option value="Site Supervisor">Site Supervisor</option>
-                             <option value="Accountant">Accountant</option>
+                             <option value="Office Manager">Office Manager</option>
+                             <option value="Project Manager">Project Manager</option>
+                             <option value="Store Manager">Store Manager</option>
                           </select>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
-                         {ALL_WORKFLOWS.filter(wf => (dbRole === 'Admin' ? ALL_WORKFLOWS.map(w=>w.id) : dbRole === 'Site Supervisor' ? DEFAULT_SUPERVISOR_PERMS : DEFAULT_ACCOUNTANT_PERMS).includes(wf.id)).map(wf => {
+                         {ALL_WORKFLOWS.filter(wf => (dbRole === 'Admin' ? ALL_WORKFLOWS.map(w=>w.id) : dbRole === 'Office Manager' ? DEFAULT_OFFICE_MANAGER_PERMS : dbRole === 'Project Manager' ? DEFAULT_PROJECT_MANAGER_PERMS : DEFAULT_STORE_MANAGER_PERMS).includes(wf.id)).map(wf => {
                             const Icon = ICONS[wf.id] || FileText;
                             return (
                                <div key={wf.id} onClick={() => localSetSelectedDbForm(wf.id)} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md hover:-translate-y-1 transition-all cursor-pointer group flex flex-col items-center text-center">

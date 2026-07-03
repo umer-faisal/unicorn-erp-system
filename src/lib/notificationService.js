@@ -5,7 +5,7 @@ import { db } from '@/lib/firebase';
  * Create a notification document in the 'notifications' Firestore collection.
  * 
  * @param {Object} data
- * @param {string} data.recipientRole - Target role (e.g. 'Accountant', 'Admin', 'Site Supervisor')
+ * @param {string} data.recipientRole - Target role (e.g. 'Office Manager', 'Admin', 'Project Manager')
  * @param {string|null} data.recipientUserId - Specific user ID, or null for role-based
  * @param {string} data.message - Notification message text
  * @param {string} data.relatedDocId - The submission document ID this relates to
