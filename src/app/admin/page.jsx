@@ -208,23 +208,21 @@ export default function AdminControlCenter() {
     e.preventDefault();
     setIsProvisioning(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, formData.email, formData.password);
-      const newUid = userCredential.user.uid;
+      const response = await fetch('/api/users/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
       
-      const newUserProfile = {
-        name: formData.fullName,
-        email: formData.email,
-        password: formData.password, // Storing plaintext password as requested by user
-        role: formData.role,
-        permissions: formData.permissions,
-        status: 'Active',
-        createdAt: new Date().toISOString()
-      };
+      const data = await response.json();
       
-      await setDoc(doc(db, 'users', newUid), newUserProfile);
-      await signOut(secondaryAuth);
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create user');
+      }
+
+      const { uid, user: newUserProfile } = data;
       
-      setUsersList(prev => [{ id: newUid, ...newUserProfile }, ...prev]);
+      setUsersList(prev => [{ id: uid, ...newUserProfile }, ...prev]);
       
       setFormData({ 
         fullName: '', 
@@ -243,9 +241,17 @@ export default function AdminControlCenter() {
   };
 
   const handleDeleteUser = async (id) => {
-     if (confirm("Are you sure you want to delete this user? Note: This only deletes their profile from the database. Complete auth deletion requires Admin SDK.")) {
+     if (confirm("Are you sure you want to delete this user? This will completely remove them from the database and authentication.")) {
          try {
-           await deleteDoc(doc(db, 'users', id));
+           const response = await fetch(`/api/users/delete?id=${id}`, {
+             method: 'DELETE'
+           });
+           
+           const data = await response.json();
+           if (!response.ok) {
+             throw new Error(data.error || 'Failed to delete user');
+           }
+
            setUsersList(prev => prev.filter(u => u.id !== id));
            toast.success("User deleted successfully!");
         } catch (error) {
@@ -262,13 +268,16 @@ export default function AdminControlCenter() {
   const handleEditUser = async (e) => {
      e.preventDefault();
      try {
-       const userRef = doc(db, 'users', editFormData.id);
-       await updateDoc(userRef, {
-         name: editFormData.fullName,
-         email: editFormData.email,
-         role: editFormData.role,
-         permissions: editFormData.permissions
+       const response = await fetch('/api/users/update', {
+         method: 'PUT',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify(editFormData)
        });
+
+       const data = await response.json();
+       if (!response.ok) {
+         throw new Error(data.error || 'Failed to update user');
+       }
        
        setUsersList(prev => prev.map(u => 
           u.id === editFormData.id 
