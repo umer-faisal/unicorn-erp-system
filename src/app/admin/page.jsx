@@ -393,7 +393,7 @@ export default function AdminControlCenter() {
       {/* Edit User Modal */}
       {showEditModal && (
          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-slate-100 relative my-8">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-slate-100 relative my-8 max-h-[90vh] overflow-y-auto">
                <button type="button" onClick={() => setShowEditModal(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
                   <X className="w-5 h-5" />
                </button>
