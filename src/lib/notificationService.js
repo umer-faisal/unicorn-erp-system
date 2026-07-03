@@ -8,10 +8,14 @@ import { db } from '@/lib/firebase';
  */
 export async function fetchEmailByRole(role) {
   try {
-    const q = query(collection(db, 'users'), where('role', '==', role));
-    const snapshot = await getDocs(q);
-    if (!snapshot.empty) {
-      return snapshot.docs[0].data().email || '';
+    const snapshot = await getDocs(collection(db, 'users'));
+    const targetRole = role.toLowerCase();
+    
+    for (const doc of snapshot.docs) {
+      const userData = doc.data();
+      if (userData.role && userData.role.toLowerCase() === targetRole) {
+        return userData.email || '';
+      }
     }
     return '';
   } catch (error) {
