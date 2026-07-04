@@ -9,11 +9,11 @@ import { db } from '@/lib/firebase';
 export async function fetchEmailByRole(role) {
   try {
     const snapshot = await getDocs(collection(db, 'users'));
-    const targetRole = role.toLowerCase();
+    const targetRole = role.trim().toLowerCase();
     
     for (const doc of snapshot.docs) {
       const userData = doc.data();
-      if (userData.role && userData.role.toLowerCase() === targetRole) {
+      if (userData.role && typeof userData.role === 'string' && userData.role.trim().toLowerCase() === targetRole) {
         return userData.email || '';
       }
     }
