@@ -177,11 +177,12 @@ export default function MeasurementForm({ onSuccess }) {
         </div>
         <div className="relative">
           <select
+            required
             onChange={(e) => handlePRSelect(e.target.value)}
             className="w-full px-4 py-3 bg-white border-2 border-blue-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all appearance-none cursor-pointer"
             defaultValue=""
           >
-            <option value="">— Select a Pending PR (Optional) —</option>
+            <option value="">— Select a Pending PR (Required) —</option>
             {isLoadingPRs ? (
               <option disabled>Loading pending PRs...</option>
             ) : pendingPRs.length === 0 ? (

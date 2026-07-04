@@ -179,11 +179,12 @@ export default function GoodReceivedNoteForm({ onSuccess }) {
         </div>
         <div className="relative">
           <select
+            required
             onChange={(e) => handlePOSelect(e.target.value)}
             className="w-full px-4 py-3 bg-white border-2 border-emerald-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all appearance-none cursor-pointer"
             defaultValue=""
           >
-            <option value="">— Select a Pending Work Order (Optional) —</option>
+            <option value="">— Select a Pending Work Order (Required) —</option>
             {isLoadingPOs ? (
               <option disabled>Loading pending Work Orders...</option>
             ) : pendingPOs.length === 0 ? (
