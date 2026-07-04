@@ -222,7 +222,7 @@ export default function AdminControlCenter() {
 
       const { uid, user: newUserProfile } = data;
       
-      setUsersList(prev => [{ id: uid, ...newUserProfile }, ...prev]);
+      setUsersList(prev => [{ id: uid, ...newUserProfile }, ...prev]);  
       
       setFormData({ 
         fullName: '', 
