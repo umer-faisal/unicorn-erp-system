@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Globe, Link2, ChevronDown, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { collection, addDoc, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, doc, updateDoc, getCountFromServer } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'react-toastify';
 import { createNotification } from '@/lib/notificationService';
@@ -19,6 +19,19 @@ export default function GoodReceivedNoteForm({ onSuccess }) {
   const [selectedPO, setSelectedPO] = useState(null);
   const [isLoadingPOs, setIsLoadingPOs] = useState(false);
   const formRef = useRef(null);
+  const [grnNumber, setGrnNumber] = useState('...');
+
+  const fetchGrnNumber = async () => {
+    try {
+      const q = query(collection(db, 'submissions'), where('formId', '==', 'grn'));
+      const snapshot = await getCountFromServer(q);
+      const nextNum = snapshot.data().count + 1;
+      setGrnNumber(`GRN-${nextNum.toString().padStart(4, '0')}`);
+    } catch (err) {
+      console.error('Error fetching grn number:', err);
+      setGrnNumber('ERROR');
+    }
+  };
 
   // Fetch pending POs on mount
   useEffect(() => {
@@ -41,6 +54,7 @@ export default function GoodReceivedNoteForm({ onSuccess }) {
       }
     };
     fetchPendingPOs();
+    fetchGrnNumber();
   }, []);
 
   // Auto-fill when a PO is selected
@@ -145,6 +159,7 @@ export default function GoodReceivedNoteForm({ onSuccess }) {
       toast.success('Good Received Note submitted successfully!');
       e.target.reset();
       setSelectedPO(null);
+      fetchGrnNumber();
       if (onSuccess) onSuccess();
     } catch (err) {
       toast.error('Error submitting form: ' + err.message);
@@ -244,8 +259,8 @@ export default function GoodReceivedNoteForm({ onSuccess }) {
                   </div>
                   <div className="w-[20%] flex flex-row border-l-[1px] border-black h-full">
                      <div className="w-[40%] flex items-center justify-center border-r-[1px] border-black font-[500] text-[13px]">GRN#</div>
-                     <div className="w-[60%] p-0">
-                        <input name="grnNumber" required type="text" className="w-full h-full outline-none px-1 font-bold text-[13px] text-center" />
+                     <div className="w-[60%] p-0 bg-slate-50">
+                        <input name="grnNumber" value={grnNumber} readOnly required type="text" className="w-full h-full outline-none px-1 font-bold text-[13px] text-center bg-transparent text-slate-500 cursor-not-allowed" />
                      </div>
                   </div>
                </div>

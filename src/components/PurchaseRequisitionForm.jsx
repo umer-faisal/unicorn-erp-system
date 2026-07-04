@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Globe } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, getCountFromServer, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'react-toastify';
 import { createNotification, fetchEmailByRole } from '@/lib/notificationService';
@@ -13,6 +13,23 @@ export default function PurchaseRequisitionForm({ onSuccess }) {
   const [items, setItems] = useState(Array.from({ length: 15 }, (_, i) => ({ id: i })));
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reqNumber, setReqNumber] = useState('...');
+
+  const fetchReqNumber = async () => {
+    try {
+      const q = query(collection(db, 'submissions'), where('formId', '==', 'requisition'));
+      const snapshot = await getCountFromServer(q);
+      const nextNum = snapshot.data().count + 1;
+      setReqNumber(`PR-${nextNum.toString().padStart(4, '0')}`);
+    } catch (err) {
+      console.error('Error fetching req number:', err);
+      setReqNumber('ERROR');
+    }
+  };
+
+  React.useEffect(() => {
+    fetchReqNumber();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,6 +74,7 @@ export default function PurchaseRequisitionForm({ onSuccess }) {
 
       toast.success('Purchase Requisition submitted successfully!');
       e.target.reset();
+      fetchReqNumber(); // Update number for the next form
       if (onSuccess) onSuccess();
     } catch (err) {
       toast.error('Error submitting form: ' + err.message);
@@ -90,8 +108,8 @@ export default function PurchaseRequisitionForm({ onSuccess }) {
                {/* Req # Area */}
                <div className="w-[20%] flex flex-col justify-end px-2">
                   <div className="border border-black border-b-0 text-center text-[13px] p-0.5 font-medium">Req. #</div>
-                  <div className="border border-black h-[30px] p-0">
-                     <input name="reqNumber" required type="text" className="w-full h-full outline-none text-center px-1 font-semibold" />
+                  <div className="border border-black h-[30px] p-0 bg-slate-50">
+                     <input name="reqNumber" value={reqNumber} readOnly required type="text" className="w-full h-full outline-none text-center px-1 font-semibold bg-transparent cursor-not-allowed text-slate-500" />
                   </div>
                   <div className="text-[12px] text-center bg-gray-200 mt-1">Office Use Only</div>
                </div>

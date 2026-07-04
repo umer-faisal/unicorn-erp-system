@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Globe, Link2, ChevronDown, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { collection, addDoc, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, doc, updateDoc, getCountFromServer } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'react-toastify';
 import { createNotification, fetchEmailByRole } from '@/lib/notificationService';
@@ -19,6 +19,19 @@ export default function MeasurementForm({ onSuccess }) {
   const [selectedPR, setSelectedPR] = useState(null);
   const [isLoadingPRs, setIsLoadingPRs] = useState(false);
   const formRef = useRef(null);
+  const [woNumber, setWoNumber] = useState('...');
+
+  const fetchWoNumber = async () => {
+    try {
+      const q = query(collection(db, 'submissions'), where('formId', '==', 'measurement'));
+      const snapshot = await getCountFromServer(q);
+      const nextNum = snapshot.data().count + 1;
+      setWoNumber(`WO-${nextNum.toString().padStart(4, '0')}`);
+    } catch (err) {
+      console.error('Error fetching wo number:', err);
+      setWoNumber('ERROR');
+    }
+  };
 
   // Fetch pending PRs on mount
   useEffect(() => {
@@ -41,6 +54,7 @@ export default function MeasurementForm({ onSuccess }) {
       }
     };
     fetchPendingPRs();
+    fetchWoNumber();
   }, []);
 
   // Auto-fill when a PR is selected
@@ -143,6 +157,7 @@ export default function MeasurementForm({ onSuccess }) {
       toast.success('Work Order submitted successfully!');
       e.target.reset();
       setSelectedPR(null);
+      fetchWoNumber();
       if (onSuccess) onSuccess();
     } catch (err) {
       toast.error('Error submitting form: ' + err.message);
@@ -214,7 +229,7 @@ export default function MeasurementForm({ onSuccess }) {
            <div className="flex flex-col gap-4 w-full md:w-1/2">
               <div className="flex border-[2px] border-black h-[40px] md:h-[35px]">
                  <div className="w-[120px] px-2 flex items-center text-[12px] font-bold border-r-[2px] border-black uppercase bg-white">WORK ORDER</div>
-                 <input name="workOrder" required type="text" className="flex-1 outline-none px-3 text-sm font-semibold bg-white" />
+                 <input name="workOrder" value={woNumber} readOnly required type="text" className="flex-1 outline-none px-3 text-sm font-semibold bg-slate-50 text-slate-500 cursor-not-allowed" />
               </div>
               <div className="flex border-[2px] border-black h-[40px] md:h-[35px]">
                  <div className="w-[120px] px-2 flex items-center text-[12px] font-bold border-r-[2px] border-black uppercase bg-white">VENDOR:</div>
